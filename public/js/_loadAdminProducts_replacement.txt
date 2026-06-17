@@ -1,0 +1,62 @@
+async function loadAdminProducts() {
+  const el = document.getElementById('adminContent');
+  if (!el) return;
+  el.innerHTML = '<div class="spinner"></div>';
+
+  const searchInput = document.getElementById('adminProductSearchInput');
+  const search = searchInput ? searchInput.value.trim() : '';
+
+  try {
+    let url = '/products?limit=50';
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+
+    const data = await apiFetch(url);
+    el.innerHTML = `
+      <div class="section-header">
+        <h2>Products</h2>
+        <button class="btn btn-primary btn-sm" onclick="openProductModal()">+ Add Product</button>
+      </div>
+
+      <div class="admin-search" style="margin-bottom:1rem">
+        <div class="search-bar">
+          <input
+            type="text"
+            id="adminProductSearchInput"
+            placeholder="Search product name..."
+            value="${search}"
+            oninput="adminSearchProducts()" />
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>${data.products.map(p => {
+            const secureProductData = JSON.stringify(p).replace(/'/g, "&apos;").replace(/"/g, """);
+            return `
+            <tr>
+              <td>${p.name}</td>
+              <td>${p.category}</td>
+              <td>${formatPrice(p.price)}</td>
+              <td>${p.stockQuantity}</td>
+              <td>${p.isActive ? '<span class="status-badge status-delivered">Active</span>' : '<span class="status-badge status-cancelled">Inactive</span>'}</td>
+              <td>
+                <button class="btn btn-outline btn-sm" onclick="openProductModal(JSON.parse('${secureProductData}'))">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p._id}')">Delete</button>
+              </td>
+            </tr>
+            `;
+          }).join('')}</tbody>
+        </table>
+      </div>
+    `;
+  } catch (err) {
+    el.innerHTML = `<p class="empty-state">${err.message}</p>`;
+  }
+}
+
+function adminSearchProducts() {
+  clearTimeout(window._adminProductSearchTimer);
+  window._adminProductSearchTimer = setTimeout(() => loadAdminProducts(), 250);
+}
+
