@@ -1,4 +1,4 @@
-# ShopHive — E-Commerce Platform
+# Intern-Shop — E-Commerce Platform
 
 A full-stack e-commerce web application built with Node.js, Express, and MongoDB. ShopHive supports product browsing, cart management, order tracking, user authentication, and an admin panel for managing products and categories.
 
